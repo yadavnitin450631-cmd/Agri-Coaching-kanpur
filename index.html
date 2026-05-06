@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Test Lab</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="top-bar" aria-label="Test controls">
+        <div>
+          <p class="eyebrow">Practice + Analysis</p>
+          <h1>Test Lab</h1>
+        </div>
+        <div class="test-meta">
+          <div>
+            <span>Question</span>
+            <strong id="questionCount">1 / 10</strong>
+          </div>
+          <div>
+            <span>Time</span>
+            <strong id="timer">10:00</strong>
+          </div>
+        </div>
+      </section>
+
+      <section id="setupScreen" class="screen active">
+        <div class="intro-panel">
+          <div class="intro-copy">
+            <p class="eyebrow">Ready when you are</p>
+            <h2>Apna mock test start karo, result ke saath deep analysis milega.</h2>
+            <p>
+              Subject choose karo, timer set karo, aur test submit karte hi weak topics,
+              accuracy, speed, aur per-question review dekh lo.
+            </p>
+          </div>
+          <div class="visual-board" aria-hidden="true">
+            <div class="meter-ring">
+              <span>82%</span>
+            </div>
+            <div class="spark-bars">
+              <i style="height: 36%"></i>
+              <i style="height: 72%"></i>
+              <i style="height: 52%"></i>
+              <i style="height: 88%"></i>
+              <i style="height: 66%"></i>
+            </div>
+          </div>
+        </div>
+
+        <form id="setupForm" class="setup-grid">
+          <label>
+            <span>Student Name</span>
+            <input id="studentName" type="text" placeholder="Name" required />
+          </label>
+          <label>
+            <span>Roll / Mobile</span>
+            <input id="studentRoll" type="text" placeholder="Roll no." required />
+          </label>
+          <label>
+            <span>Test Type</span>
+            <select id="testType">
+              <option value="mixed">Mixed Aptitude</option>
+              <option value="math">Math Focus</option>
+              <option value="reasoning">Reasoning Focus</option>
+              <option value="english">English Focus</option>
+            </select>
+          </label>
+          <label>
+            <span>Questions</span>
+            <select id="questionLimit">
+              <option value="10">10 Questions</option>
+              <option value="15">15 Questions</option>
+              <option value="20">20 Questions</option>
+            </select>
+          </label>
+          <label>
+            <span>Timer</span>
+            <select id="timeLimit">
+              <option value="10">10 Minutes</option>
+              <option value="15">15 Minutes</option>
+              <option value="20">20 Minutes</option>
+            </select>
+          </label>
+          <button class="primary-action" type="submit">Start Test</button>
+        </form>
+      </section>
+
+      <section id="testScreen" class="screen">
+        <div class="question-panel">
+          <div class="progress-track">
+            <span id="progressFill"></span>
+          </div>
+          <div class="question-head">
+            <span id="topicBadge">Math</span>
+            <button id="markReview" class="icon-button" type="button" title="Mark for review" aria-label="Mark for review">☆</button>
+          </div>
+          <h2 id="questionText"></h2>
+          <div id="optionsList" class="options-list"></div>
+        </div>
+
+        <div class="nav-row">
+          <button id="prevBtn" class="secondary-action" type="button">Previous</button>
+          <button id="clearBtn" class="ghost-action" type="button">Clear</button>
+          <button id="nextBtn" class="secondary-action" type="button">Next</button>
+          <button id="submitBtn" class="primary-action" type="button">Submit Test</button>
+        </div>
+
+        <div id="questionMap" class="question-map" aria-label="Question navigation"></div>
+      </section>
+
+      <section id="resultScreen" class="screen">
+        <div class="result-hero">
+          <div>
+            <p class="eyebrow">Result Analysis</p>
+            <h2 id="scoreTitle">Great attempt</h2>
+            <p id="scoreSummary"></p>
+          </div>
+          <div class="score-orbit">
+            <canvas id="scoreCanvas" width="180" height="180" aria-label="Score chart"></canvas>
+            <strong id="scorePercent">0%</strong>
+          </div>
+        </div>
+
+        <div class="analysis-grid">
+          <article class="metric">
+            <span>Correct</span>
+            <strong id="correctMetric">0</strong>
+          </article>
+          <article class="metric">
+            <span>Wrong</span>
+            <strong id="wrongMetric">0</strong>
+          </article>
+          <article class="metric">
+            <span>Skipped</span>
+            <strong id="skippedMetric">0</strong>
+          </article>
+          <article class="metric">
+            <span>Accuracy</span>
+            <strong id="accuracyMetric">0%</strong>
+          </article>
+        </div>
+
+        <div class="analysis-section">
+          <h3>Topic Performance</h3>
+          <div id="topicAnalysis" class="topic-analysis"></div>
+        </div>
+
+        <div class="analysis-section">
+          <h3>Suggestions</h3>
+          <ul id="suggestionList" class="suggestion-list"></ul>
+        </div>
+
+        <div class="analysis-section">
+          <h3>Question Review</h3>
+          <div id="reviewList" class="review-list"></div>
+        </div>
+
+        <div class="analysis-section">
+          <h3>Saved Student Reports</h3>
+          <div id="savedReportList" class="review-list"></div>
+        </div>
+
+        <div class="nav-row compact">
+          <button id="restartBtn" class="primary-action" type="button">Take New Test</button>
+          <button id="retryWrongBtn" class="secondary-action" type="button">Retry Wrong</button>
+          <button id="downloadCsvBtn" class="secondary-action" type="button">Download CSV</button>
+          <button id="printReportBtn" class="secondary-action" type="button">Print Report</button>
+        </div>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>

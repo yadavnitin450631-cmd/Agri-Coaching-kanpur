@@ -1,0 +1,569 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Analysis App</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background: #eef6f5;
+      color: #182230;
+      padding: 18px;
+    }
+    .app {
+      max-width: 920px;
+      margin: auto;
+    }
+    .box {
+      background: white;
+      border: 1px solid #d7e0e6;
+      border-radius: 10px;
+      padding: 22px;
+      margin-bottom: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.08);
+    }
+    h1, h2, h3 { margin-top: 0; }
+    .top {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .meta {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .pill {
+      border: 1px solid #d7e0e6;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: #fff;
+      font-weight: bold;
+    }
+    select, input, button {
+      min-height: 44px;
+      border-radius: 8px;
+      border: 1px solid #ccd6dd;
+      padding: 0 12px;
+      font-size: 16px;
+    }
+    button {
+      cursor: pointer;
+      font-weight: bold;
+      background: #0f9f8f;
+      color: white;
+      border: 0;
+    }
+    button.secondary {
+      background: white;
+      color: #182230;
+      border: 1px solid #ccd6dd;
+    }
+    .setup {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 12px;
+    }
+    .screen { display: none; }
+    .screen.active { display: block; }
+    .options {
+      display: grid;
+      gap: 10px;
+      margin-top: 18px;
+    }
+    .option {
+      width: 100%;
+      text-align: left;
+      background: white;
+      color: #182230;
+      border: 1px solid #ccd6dd;
+      padding: 14px;
+    }
+    .option.selected {
+      background: #e3faf6;
+      border-color: #0f9f8f;
+    }
+    .row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .map {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(42px, 1fr));
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .map button {
+      aspect-ratio: 1;
+      background: white;
+      color: #182230;
+      border: 1px solid #ccd6dd;
+      padding: 0;
+    }
+    .map button.done { background: #dff8ef; }
+    .map button.now { outline: 3px solid rgba(15,159,143,.25); }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+    .metric {
+      border: 1px solid #d7e0e6;
+      border-radius: 8px;
+      padding: 14px;
+      background: #fbfdff;
+    }
+    .metric span {
+      color: #667085;
+      display: block;
+      font-size: 14px;
+    }
+    .metric strong {
+      font-size: 26px;
+    }
+    .review {
+      border-left: 5px solid #f4b860;
+      padding: 12px;
+      border-radius: 8px;
+      background: #fbfdff;
+      margin-bottom: 10px;
+    }
+    .review.correct { border-left-color: #238b5d; }
+    .review.wrong { border-left-color: #d94d4d; }
+    .topic {
+      margin-bottom: 10px;
+    }
+    .bar {
+      height: 10px;
+      background: #edf1f4;
+      border-radius: 99px;
+      overflow: hidden;
+      margin-top: 6px;
+    }
+    .bar span {
+      display: block;
+      height: 100%;
+      background: #0f9f8f;
+    }
+    @media (max-width: 700px) {
+      .setup, .row, .metrics { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <section class="box top">
+      <div>
+        <h1>Test Analysis App</h1>
+        <p>Test do aur submit ke baad full analysis dekho.</p>
+      </div>
+      <div class="meta">
+        <div class="pill" id="questionCount">1 / 10</div>
+        <div class="pill" id="timer">10:00</div>
+      </div>
+    </section>
+
+    <section id="setupScreen" class="screen active box">
+      <h2>Start Test</h2>
+      <div class="setup">
+        <input id="studentName" type="text" placeholder="Student name">
+        <input id="studentRoll" type="text" placeholder="Roll / mobile">
+        <select id="testType">
+          <option value="mixed">Mixed</option>
+          <option value="math">Math</option>
+          <option value="reasoning">Reasoning</option>
+          <option value="english">English</option>
+        </select>
+        <select id="questionLimit">
+          <option value="10">10 Questions</option>
+          <option value="15">15 Questions</option>
+          <option value="20">20 Questions</option>
+        </select>
+        <select id="timeLimit">
+          <option value="10">10 Minutes</option>
+          <option value="15">15 Minutes</option>
+          <option value="20">20 Minutes</option>
+        </select>
+        <button onclick="startFromSetup()">Start Test</button>
+      </div>
+    </section>
+
+    <section id="testScreen" class="screen">
+      <div class="box">
+        <p><strong id="topicBadge"></strong></p>
+        <h2 id="questionText"></h2>
+        <div id="optionsList" class="options"></div>
+        <div class="row">
+          <button class="secondary" onclick="prevQuestion()">Previous</button>
+          <button class="secondary" onclick="clearAnswer()">Clear</button>
+          <button class="secondary" onclick="nextQuestion()">Next</button>
+          <button onclick="submitTest()">Submit</button>
+        </div>
+        <div id="questionMap" class="map"></div>
+      </div>
+    </section>
+
+    <section id="resultScreen" class="screen">
+      <div class="box">
+        <h2 id="scoreTitle"></h2>
+        <p id="scoreSummary"></p>
+        <div class="metrics">
+          <div class="metric"><span>Correct</span><strong id="correctMetric">0</strong></div>
+          <div class="metric"><span>Wrong</span><strong id="wrongMetric">0</strong></div>
+          <div class="metric"><span>Skipped</span><strong id="skippedMetric">0</strong></div>
+          <div class="metric"><span>Accuracy</span><strong id="accuracyMetric">0%</strong></div>
+        </div>
+      </div>
+      <div class="box">
+        <h3>Topic Analysis</h3>
+        <div id="topicAnalysis"></div>
+      </div>
+      <div class="box">
+        <h3>Suggestions</h3>
+        <ul id="suggestionList"></ul>
+      </div>
+      <div class="box">
+        <h3>Question Review</h3>
+        <div id="reviewList"></div>
+      </div>
+      <div class="box">
+        <h3>Saved Student Reports</h3>
+        <div id="savedReportList"></div>
+      </div>
+      <div class="row">
+        <button onclick="resetToSetup()">New Test</button>
+        <button class="secondary" onclick="retryWrongAnswers()">Retry Wrong</button>
+        <button class="secondary" onclick="downloadCsvReport()">Download CSV</button>
+        <button class="secondary" onclick="window.print()">Print Report</button>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const questionBank = [
+      { topic: "Math", question: "If 15% of a number is 45, what is the number?", options: ["250", "275", "300", "320"], answer: 2, explain: "15% equals 45, so number = 45 x 100 / 15 = 300." },
+      { topic: "Math", question: "A train covers 180 km in 3 hours. Average speed?", options: ["45 km/h", "50 km/h", "60 km/h", "75 km/h"], answer: 2, explain: "Speed = distance / time = 180 / 3 = 60 km/h." },
+      { topic: "Math", question: "Simple interest on Rs. 5000 at 8% for 2 years?", options: ["Rs. 600", "Rs. 700", "Rs. 800", "Rs. 900"], answer: 2, explain: "SI = P x R x T / 100 = 5000 x 8 x 2 / 100 = 800." },
+      { topic: "Math", question: "Next number: 4, 9, 16, 25, ?", options: ["30", "32", "36", "49"], answer: 2, explain: "These are squares: 2², 3², 4², 5², so next is 6² = 36." },
+      { topic: "Reasoning", question: "Book is related to Reading as Fork is related to:", options: ["Drawing", "Eating", "Writing", "Cooking"], answer: 1, explain: "Book is used for reading; fork is used for eating." },
+      { topic: "Reasoning", question: "Find the odd one out.", options: ["Circle", "Triangle", "Square", "Cube"], answer: 3, explain: "Cube is 3D; others are 2D shapes." },
+      { topic: "Reasoning", question: "If A = 1, B = 2, then CAT equals:", options: ["24", "26", "28", "30"], answer: 0, explain: "C + A + T = 3 + 1 + 20 = 24." },
+      { topic: "Reasoning", question: "Opposite direction of South-East?", options: ["North-East", "North-West", "South-West", "West"], answer: 1, explain: "Opposite of South-East is North-West." },
+      { topic: "English", question: "Choose the correctly spelled word.", options: ["Recieve", "Receive", "Receeve", "Reciave"], answer: 1, explain: "Correct spelling is Receive." },
+      { topic: "English", question: "Synonym of Rapid.", options: ["Slow", "Quick", "Late", "Weak"], answer: 1, explain: "Rapid means quick." },
+      { topic: "English", question: "Antonym of Ancient.", options: ["Old", "Modern", "Historic", "Past"], answer: 1, explain: "Ancient means old; opposite is modern." },
+      { topic: "English", question: "She has been studying ___ morning.", options: ["for", "since", "from", "by"], answer: 1, explain: "Since is used with a point of time." },
+      { topic: "Math", question: "If 2:3 = x:18, then x is:", options: ["8", "10", "12", "14"], answer: 2, explain: "2/3 = x/18, so x = 12." },
+      { topic: "Reasoning", question: "Complete the series: AZ, BY, CX, ?", options: ["DW", "DV", "EW", "EX"], answer: 0, explain: "First letters forward, second letters backward: DW." },
+      { topic: "English", question: "Choose the correct sentence.", options: ["He do his work.", "He does his work.", "He doing his work.", "He done his work."], answer: 1, explain: "With He, use does." },
+      { topic: "Math", question: "What is 7 x 8 + 12?", options: ["56", "64", "68", "72"], answer: 2, explain: "7 x 8 = 56, then +12 = 68." },
+      { topic: "Reasoning", question: "If today is Monday, what day after 10 days?", options: ["Wednesday", "Thursday", "Friday", "Saturday"], answer: 1, explain: "10 days after Monday is Thursday." },
+      { topic: "English", question: "Plural of Analysis?", options: ["Analysises", "Analysi", "Analyses", "Analysis"], answer: 2, explain: "Plural of analysis is analyses." },
+      { topic: "Math", question: "10% discount on Rs. 900. Selling price?", options: ["Rs. 800", "Rs. 810", "Rs. 850", "Rs. 890"], answer: 1, explain: "10% of 900 is 90. Price = 900 - 90 = 810." },
+      { topic: "Reasoning", question: "Mirror image of '13' is closest to:", options: ["31", "E1", "1E", "13"], answer: 1, explain: "In mirror, 3 appears like E, so closest is E1." }
+    ];
+
+    const state = {
+      questions: [],
+      current: 0,
+      answers: [],
+      studentName: "",
+      studentRoll: "",
+      testType: "mixed",
+      secondsLeft: 600,
+      timerId: null
+    };
+
+    function $(id) {
+      return document.getElementById(id);
+    }
+
+    function startFromSetup() {
+      const type = $("testType").value;
+      const limit = Number($("questionLimit").value);
+      const minutes = Number($("timeLimit").value);
+      state.studentName = $("studentName").value.trim();
+      state.studentRoll = $("studentRoll").value.trim();
+      state.testType = type;
+      if (!state.studentName || !state.studentRoll) {
+        alert("Student name aur roll/mobile fill karo.");
+        return;
+      }
+      const filtered = type === "mixed" ? questionBank : questionBank.filter(q => q.topic.toLowerCase() === type);
+      startTest(shuffle(filtered).slice(0, limit), minutes * 60);
+    }
+
+    function startTest(questions, seconds) {
+      state.questions = questions.length ? questions : questionBank.slice(0, 10);
+      state.current = 0;
+      state.answers = Array(state.questions.length).fill(null);
+      state.secondsLeft = seconds;
+      showScreen("testScreen");
+      startTimer();
+      renderQuestion();
+    }
+
+    function startTimer() {
+      clearInterval(state.timerId);
+      updateTimer();
+      state.timerId = setInterval(function () {
+        state.secondsLeft--;
+        updateTimer();
+        if (state.secondsLeft <= 0) submitTest();
+      }, 1000);
+    }
+
+    function updateTimer() {
+      const m = Math.max(0, Math.floor(state.secondsLeft / 60));
+      const s = Math.max(0, state.secondsLeft % 60);
+      $("timer").textContent = String(m).padStart(2, "0") + ":" + String(s).padStart(2, "0");
+    }
+
+    function renderQuestion() {
+      const q = state.questions[state.current];
+      $("questionCount").textContent = (state.current + 1) + " / " + state.questions.length;
+      $("topicBadge").textContent = q.topic;
+      $("questionText").textContent = q.question;
+      $("optionsList").innerHTML = "";
+
+      q.options.forEach(function (option, index) {
+        const btn = document.createElement("button");
+        btn.className = "option" + (state.answers[state.current] === index ? " selected" : "");
+        btn.textContent = String.fromCharCode(65 + index) + ". " + option;
+        btn.onclick = function () {
+          state.answers[state.current] = index;
+          renderQuestion();
+        };
+        $("optionsList").appendChild(btn);
+      });
+
+      renderMap();
+    }
+
+    function renderMap() {
+      $("questionMap").innerHTML = "";
+      state.questions.forEach(function (_, index) {
+        const btn = document.createElement("button");
+        btn.textContent = index + 1;
+        btn.className = (state.answers[index] !== null ? "done " : "") + (index === state.current ? "now" : "");
+        btn.onclick = function () {
+          state.current = index;
+          renderQuestion();
+        };
+        $("questionMap").appendChild(btn);
+      });
+    }
+
+    function prevQuestion() {
+      state.current = Math.max(0, state.current - 1);
+      renderQuestion();
+    }
+
+    function nextQuestion() {
+      state.current = Math.min(state.questions.length - 1, state.current + 1);
+      renderQuestion();
+    }
+
+    function clearAnswer() {
+      state.answers[state.current] = null;
+      renderQuestion();
+    }
+
+    function submitTest() {
+      clearInterval(state.timerId);
+      const result = getResult();
+      showScreen("resultScreen");
+      renderResult(result);
+    }
+
+    function getResult() {
+      let correct = 0, wrong = 0, skipped = 0;
+      const topics = {};
+
+      state.questions.forEach(function (q, index) {
+        if (!topics[q.topic]) topics[q.topic] = { total: 0, correct: 0 };
+        topics[q.topic].total++;
+
+        const selected = state.answers[index];
+        if (selected === null) skipped++;
+        else if (selected === q.answer) {
+          correct++;
+          topics[q.topic].correct++;
+        } else wrong++;
+      });
+
+      const attempted = correct + wrong;
+      const score = Math.round((correct / state.questions.length) * 100);
+      const accuracy = attempted ? Math.round((correct / attempted) * 100) : 0;
+      return { correct, wrong, skipped, attempted, score, accuracy, topics };
+    }
+
+    function renderResult(result) {
+      saveResult(result);
+      $("scoreTitle").textContent = "Score: " + result.score + "%";
+      $("scoreSummary").textContent = state.studentName + " ne " + state.questions.length + " me se " + result.correct + " correct kiye. Accuracy " + result.accuracy + "% hai.";
+      $("correctMetric").textContent = result.correct;
+      $("wrongMetric").textContent = result.wrong;
+      $("skippedMetric").textContent = result.skipped;
+      $("accuracyMetric").textContent = result.accuracy + "%";
+      renderTopics(result.topics);
+      renderSuggestions(result);
+      renderReview();
+      renderSavedReports();
+    }
+
+    function renderTopics(topics) {
+      $("topicAnalysis").innerHTML = "";
+      Object.keys(topics).forEach(function (topic) {
+        const data = topics[topic];
+        const percent = Math.round((data.correct / data.total) * 100);
+        const div = document.createElement("div");
+        div.className = "topic";
+        div.innerHTML = "<strong>" + topic + "</strong>: " + percent + "%<div class='bar'><span style='width:" + percent + "%'></span></div>";
+        $("topicAnalysis").appendChild(div);
+      });
+    }
+
+    function renderSuggestions(result) {
+      const list = $("suggestionList");
+      list.innerHTML = "";
+      const suggestions = [];
+      const weak = Object.keys(result.topics).filter(function (topic) {
+        return result.topics[topic].correct / result.topics[topic].total < 0.6;
+      });
+
+      if (weak.length) suggestions.push(weak.join(", ") + " par focused practice karo.");
+      if (result.skipped > 0) suggestions.push("Skipped questions ko review karo aur elimination method use karo.");
+      if (result.accuracy < 70 && result.attempted > 0) suggestions.push("Wrong answers ka concept revise karo.");
+      if (result.score >= 80) suggestions.push("Ab timer kam karke speed improve karo.");
+      if (!suggestions.length) suggestions.push("Good attempt. Same pattern ka ek aur test do.");
+
+      suggestions.forEach(function (text) {
+        const li = document.createElement("li");
+        li.textContent = text;
+        list.appendChild(li);
+      });
+    }
+
+    function renderReview() {
+      $("reviewList").innerHTML = "";
+      state.questions.forEach(function (q, index) {
+        const selected = state.answers[index];
+        const status = selected === null ? "skipped" : selected === q.answer ? "correct" : "wrong";
+        const div = document.createElement("div");
+        div.className = "review " + status;
+        div.innerHTML =
+          "<strong>Q" + (index + 1) + ". " + q.question + "</strong>" +
+          "<p>Your answer: " + (selected === null ? "Skipped" : q.options[selected]) + "</p>" +
+          "<p>Correct answer: " + q.options[q.answer] + "</p>" +
+          "<p>" + q.explain + "</p>";
+        $("reviewList").appendChild(div);
+      });
+    }
+
+    function retryWrongAnswers() {
+      const wrongQuestions = state.questions.filter(function (q, index) {
+        return state.answers[index] !== null && state.answers[index] !== q.answer;
+      });
+      if (!wrongQuestions.length) {
+        resetToSetup();
+        return;
+      }
+      startTest(wrongQuestions, Math.max(180, wrongQuestions.length * 60));
+    }
+
+    function saveResult(result) {
+      const reports = getSavedReports();
+      const report = {
+        id: Date.now(),
+        date: new Date().toLocaleString(),
+        name: state.studentName || "Student",
+        roll: state.studentRoll || "-",
+        testType: state.testType,
+        total: state.questions.length,
+        correct: result.correct,
+        wrong: result.wrong,
+        skipped: result.skipped,
+        score: result.score,
+        accuracy: result.accuracy,
+        topics: result.topics
+      };
+      reports.unshift(report);
+      localStorage.setItem("testAnalysisReports", JSON.stringify(reports.slice(0, 200)));
+    }
+
+    function getSavedReports() {
+      try {
+        return JSON.parse(localStorage.getItem("testAnalysisReports") || "[]");
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function renderSavedReports() {
+      const wrap = $("savedReportList");
+      const reports = getSavedReports();
+      wrap.innerHTML = "";
+      if (!reports.length) {
+        wrap.textContent = "Abhi koi saved report nahi hai.";
+        return;
+      }
+      reports.slice(0, 10).forEach(function (report) {
+        const div = document.createElement("div");
+        div.className = "review";
+        div.innerHTML =
+          "<strong>" + report.name + " (" + report.roll + ") - " + report.score + "%</strong>" +
+          "<p>" + report.date + " | " + report.testType + " | Correct " + report.correct + "/" + report.total + " | Accuracy " + report.accuracy + "%</p>";
+        wrap.appendChild(div);
+      });
+    }
+
+    function downloadCsvReport() {
+      const reports = getSavedReports();
+      const rows = [
+        ["Date", "Name", "Roll", "Test Type", "Total", "Correct", "Wrong", "Skipped", "Score", "Accuracy"]
+      ];
+      reports.forEach(function (report) {
+        rows.push([report.date, report.name, report.roll, report.testType, report.total, report.correct, report.wrong, report.skipped, report.score + "%", report.accuracy + "%"]);
+      });
+      const csv = rows.map(function (row) {
+        return row.map(function (cell) {
+          return '"' + String(cell).replaceAll('"', '""') + '"';
+        }).join(",");
+      }).join("\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "student-results-report.csv";
+      link.click();
+      URL.revokeObjectURL(link.href);
+    }
+
+    function resetToSetup() {
+      clearInterval(state.timerId);
+      $("timer").textContent = "10:00";
+      $("questionCount").textContent = "1 / 10";
+      showScreen("setupScreen");
+    }
+
+    function showScreen(id) {
+      ["setupScreen", "testScreen", "resultScreen"].forEach(function (screenId) {
+        $(screenId).classList.remove("active");
+      });
+      $(id).classList.add("active");
+    }
+
+    function shuffle(items) {
+      return items.slice().sort(function () { return Math.random() - 0.5; });
+    }
+  </script>
+</body>
+</html>
